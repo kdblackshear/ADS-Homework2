@@ -243,4 +243,4 @@ strength = "strong" if abs(strongest_correlation_value) >= 0.7 else "moderate" i
 print(f"The correlation coefficient is {strongest_correlation_value}, indicating a {strength} {direction} correlation between '{strongest_correlation_variable}' and 'total_rentals'.")
 
 
-
+# 
