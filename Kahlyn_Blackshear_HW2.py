@@ -243,4 +243,63 @@ strength = "strong" if abs(strongest_correlation_value) >= 0.7 else "moderate" i
 print(f"The correlation coefficient is {strongest_correlation_value}, indicating a {strength} {direction} correlation between '{strongest_correlation_variable}' and 'total_rentals'.")
 
 
-# 
+# Select a simple random sample of 500 rows without replacement using random_state=42
+sample_df = clean_df.sample(n=500, replace=False, random_state=42)
+print(f"\nRandom sample of 500 rows:\n{sample_df.head()}\n")
+
+# Calculate the mean total rentals for the complete dataset
+mean_total_rentals = clean_df['total_rentals'].mean()
+print(f"Mean total rentals for the complete dataset: {mean_total_rentals}\n")
+# Calculate the mean total rentals for the 500 row sample
+mean_500_sample = sample_df["total_rentals"].mean()
+print(f"Mean total rentals for the 500 row sample: {mean_500_sample}\n")
+
+# Draw 200 random samples without replacement with each containing 500 rows
+rng = np.random.default_rng(42)
+num_samples = 200
+sample_size = 500
+total_rows = len(clean_df)
+
+if total_rows < sample_size:
+    raise ValueError(f"Dataset has only {total_rows} rows, but you need 500.")
+
+samples = []
+
+for i in range(num_samples):
+    random_inds = rng.choice(total_rows, size=sample_size, replace=False)
+    sample_df_2 = clean_df.iloc[random_inds]
+    samples.append(sample_df_2)
+
+print(f"Successfully generated {len(samples)} samples of {sample_size} rows each.")
+
+# Calculate the mean for each bootstarp sample
+rentals = clean_df["total_rentals"].to_numpy()
+bootstrap_means = []
+
+for _ in range(5000):
+    bootstrap_sample = rng.choice(rentals, size=len(rentals), replace=True)
+    bootstrap_means.append(bootstrap_sample.mean())
+
+# Estimate the bootstrap standard error
+bootstrap_se = np.std(bootstrap_means, ddof=1)
+print(f"Bootstrap Standard Error: {bootstrap_se:.4f}")
+
+# Construct an approximate 95% bootstrap condfidence interval for mean hourly rentals using 2.5th and 97.5th percentiles
+lower, upper = np.percentile(bootstrap_means, [2.5, 97.5])
+print(f"95% Bootstrap Confidence Interval: [{lower:.2f}, {upper:.2f}]")
+
+
+# Save prepared DataFrame
+clean_df.to_csv("bike_sharing_prepared.csv", index=False)
+prepared_df = pd.read_csv("bike_sharing_prepared.csv")
+
+# Display the first 5 rows of the prepared dataset
+print(f"First 5 rows of the dataset:\n{prepared_df.head()}\n")
+# Display the shape of the prepared dataset
+print(f"Shape: {prepared_df.shape}\n")
+# Display number of missing values in each column of the prepared dataset
+print(f"Number of missing values in each column:\n{prepared_df.isna().sum()}\n")
+
+# Verify prepared_df shape matches the shape of the original dataset
+assert clean_df.shape == prepared_df.shape, "The shapes do not match."
+print(f"Prepared dataframe shape matches the original dataframe.")
