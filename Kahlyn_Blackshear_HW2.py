@@ -263,16 +263,44 @@ total_rows = len(clean_df)
 if total_rows < sample_size:
     raise ValueError(f"Dataset has only {total_rows} rows, but you need 500.")
 
-samples = []
+sample_means = []
 
-for i in range(num_samples):
+for _ in range(num_samples):
     random_inds = rng.choice(total_rows, size=sample_size, replace=False)
     sample_df_2 = clean_df.iloc[random_inds]
-    samples.append(sample_df_2)
+    sample_means.append(sample_df_2["total_rentals"].mean())
 
-print(f"Successfully generated {len(samples)} samples of {sample_size} rows each.")
+# Report mean of the 200 sample means
+mean_of_sample_means = np.mean(sample_means)
+print(f"Mean of 200 sample means: {mean_of_sample_means:.4f}")
 
-# Calculate the mean for each bootstarp sample
+# Report standard deviation of the sample means
+std_of_sample_means = np.std(sample_means, ddof=1)
+print(f"Standard deviation of sample means: {std_of_sample_means:.4f}")
+
+# Create histogram with vertical line for full dataset mean
+full_dataset_mean = clean_df["total_rentals"].mean()
+
+plt.figure(figsize=(8, 5))
+plt.hist(
+    sample_means, bins=20, edgecolor="black", alpha=0.7, color="skyblue"
+)
+plt.axvline(
+    full_dataset_mean,
+    color="red",
+    linestyle="dashed",
+    linewidth=2,
+    label=f"Full-Dataset Mean ({full_dataset_mean:.2f})",
+)
+plt.title("Histogram of 200 Sample Means (Repeated Sampling)")
+plt.xlabel("Mean Total Rentals")
+plt.ylabel("Frequency")
+plt.legend()
+plt.tight_layout()
+plt.show()
+plt.savefig(output_folder / 'histogram_200_sample_means.png')
+
+# Calculate the mean for each bootstrap sample
 rentals = clean_df["total_rentals"].to_numpy()
 bootstrap_means = []
 
